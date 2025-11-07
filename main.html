@@ -268,6 +268,12 @@
             cursor: not-allowed;
         }
 
+        .calendar-day.overlap-prevention {
+            background: #fff3cd;
+            color: #856404;
+            cursor: not-allowed;
+        }
+
         .day-number {
             font-size: 14px;
         }
@@ -420,11 +426,12 @@
                 <div class="instructions">
                     <h3>Instrucciones de uso</h3>
                     <ul>
-                        <li>Selecciona un día disponible para solicitar vacaciones (14 días consecutivos)</li>
+                        <li>Selecciona un día disponible para solicitar vacaciones (15 días consecutivos)</li>
                         <li>Los días festivos y domingos no están disponibles</li>
                         <li>Los días ya solicitados por otros usuarios tampoco están disponibles</li>
                         <li>Puedes solicitar dos períodos de vacaciones al año</li>
                         <li>Si ya tienes un período solicitado, puedes seleccionar un segundo período</li>
+                        <li>No se pueden seleccionar días que causen solapamiento con períodos existentes</li>
                     </ul>
                 </div>
             </div>
@@ -476,7 +483,7 @@
             {
                 user: "malonso1",
                 pass: "malonso1",
-                name: "Manuel Alonso",
+                name: "Miguel Alonso",
                 company: "Empresa S.A.",
                 depart: "Ventas",
                 zone: "Norte",
@@ -486,7 +493,7 @@
             {
                 user: "malonso2",
                 pass: "malonso2",
-                name: "Veronica Alonso",
+                name: "María Alonso",
                 company: "Empresa S.A.",
                 depart: "Marketing",
                 zone: "Sur",
@@ -500,7 +507,7 @@
                 company: "Empresa S.A.",
                 depart: "IT",
                 zone: "Centro",
-                per1start: "2026-01-26",
+                per1start: "2026-08-15",
                 per2start: "2026-12-10"
             }
         ];
@@ -519,11 +526,11 @@
             "2026-12-06", // Día de la Constitución
             "2026-12-08", // Inmaculada Concepción
             "2026-12-25", // Navidad
-
+            
             // Galicia (autonómicos)
             "2026-03-17", // Día de las Letras Gallegas
             "2026-07-25", // Día Nacional de Galicia
-
+            
             // Vigo (locales)
             "2026-01-25", // Festivo local de Vigo
             "2026-08-28"  // Festivo local de Vigo
@@ -559,13 +566,13 @@
             // Cargar datos de usuarios y vacaciones
             await loadUsers();
             await loadVacations();
-
+            
             // Configurar eventos
             loginBtn.addEventListener('click', handleLogin);
             logoutBtn.addEventListener('click', handleLogout);
             requestVacationBtn.addEventListener('click', handleVacationRequest);
             clearSelectionBtn.addEventListener('click', clearSelection);
-
+            
             // Permitir login con Enter
             usernameInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') handleLogin();
@@ -586,7 +593,7 @@
                 // });
                 // const data = await response.json();
                 // allUsers = data.record;
-
+                
                 // Por ahora, usamos los datos de ejemplo
                 allUsers = sampleUsers;
             } catch (error) {
@@ -607,7 +614,7 @@
                 // });
                 // const data = await response.json();
                 // allVacations = data.record;
-
+                
                 // Por ahora, inicializamos con datos vacíos
                 allVacations = allUsers.map(user => ({
                     user: user.user,
@@ -637,7 +644,7 @@
                 //     },
                 //     body: JSON.stringify(allVacations)
                 // });
-
+                
                 console.log('Vacaciones guardadas (simulado):', allVacations);
             } catch (error) {
                 console.error('Error guardando vacaciones:', error);
@@ -648,15 +655,15 @@
         function handleLogin() {
             const username = usernameInput.value.trim();
             const password = passwordInput.value;
-
+            
             if (!username || !password) {
                 showLoginError();
                 return;
             }
-
+            
             // Buscar usuario
             const user = allUsers.find(u => u.user === username && u.pass === password);
-
+            
             if (user) {
                 currentUser = user;
                 showApp();
@@ -685,14 +692,14 @@
         function showApp() {
             loginContainer.style.display = 'none';
             appContainer.style.display = 'block';
-
+            
             // Actualizar información del usuario
             userGreeting.textContent = `Bienvenido, ${currentUser.name}`;
             userInfo.textContent = `Empresa: ${currentUser.company} | Departamento: ${currentUser.depart} | Zona: ${currentUser.zone}`;
-
+            
             // Actualizar información de períodos
             updatePeriodInfo();
-
+            
             // Generar calendario
             generateCalendar(2026);
         }
@@ -701,7 +708,7 @@
         function showLogin() {
             loginContainer.style.display = 'flex';
             appContainer.style.display = 'none';
-
+            
             // Limpiar campos
             usernameInput.value = '';
             passwordInput.value = '';
@@ -710,19 +717,19 @@
         // Generar calendario para un año específico
         function generateCalendar(year) {
             calendar.innerHTML = '';
-
+            
             for (let month = 0; month < 12; month++) {
                 const monthContainer = document.createElement('div');
                 monthContainer.className = 'month-container';
-
+                
                 const monthTitle = document.createElement('div');
                 monthTitle.className = 'month-title';
                 monthTitle.textContent = new Date(year, month).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
                 monthContainer.appendChild(monthTitle);
-
+                
                 const calendarGrid = document.createElement('div');
                 calendarGrid.className = 'calendar-grid';
-
+                
                 // Encabezados de días de la semana
                 const daysOfWeek = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
                 daysOfWeek.forEach(day => {
@@ -731,44 +738,44 @@
                     dayHeader.textContent = day;
                     calendarGrid.appendChild(dayHeader);
                 });
-
+                
                 // Días del mes
                 const firstDay = new Date(year, month, 1);
                 const lastDay = new Date(year, month + 1, 0);
-
+                
                 // Días vacíos al inicio
                 for (let i = 0; i < (firstDay.getDay() + 6) % 7; i++) {
                     const emptyDay = document.createElement('div');
                     emptyDay.className = 'calendar-day empty';
                     calendarGrid.appendChild(emptyDay);
                 }
-
+                
                 // Días del mes
                 for (let day = 1; day <= lastDay.getDate(); day++) {
                     const date = new Date(year, month, day);
                     const dateString = formatDate(date);
-
+                    
                     const dayElement = document.createElement('div');
                     dayElement.className = getDayClass(date);
                     dayElement.dataset.date = dateString;
-
+                    
                     const dayNumber = document.createElement('div');
                     dayNumber.className = 'day-number';
                     dayNumber.textContent = day;
                     dayElement.appendChild(dayNumber);
-
+                    
                     const dayIndicator = document.createElement('div');
                     dayIndicator.className = 'day-indicator';
                     dayElement.appendChild(dayIndicator);
-
+                    
                     // Añadir evento de clic si el día es seleccionable
                     if (isDateSelectable(date)) {
                         dayElement.addEventListener('click', () => handleDateSelection(date));
                     }
-
+                    
                     calendarGrid.appendChild(dayElement);
                 }
-
+                
                 monthContainer.appendChild(calendarGrid);
                 calendar.appendChild(monthContainer);
             }
@@ -778,48 +785,62 @@
         function getDayClass(date) {
             const dateString = formatDate(date);
             let className = 'calendar-day';
-
+            
             // Verificar si es domingo
             if (date.getDay() === 0) {
                 return `${className} unavailable`;
             }
-
+            
             // Verificar si es festivo
             if (holidays2026.includes(dateString)) {
                 return `${className} holiday`;
             }
-
+            
             // Verificar si está en las vacaciones de otro usuario
             if (isDateInOtherUserVacation(dateString)) {
                 return `${className} other-user-vacation`;
             }
-
+            
             // Verificar si está en las vacaciones del usuario actual
             if (isDateInCurrentUserVacation(dateString)) {
                 return `${className} selected`;
             }
-
+            
             // Verificar si está en el rango seleccionado
             if (selectedDate && isDateInSelectedRange(date)) {
                 return `${className} selected-range`;
             }
-
+            
+            // Verificar si causaría solapamiento con períodos existentes
+            if (wouldCauseOverlap(date)) {
+                return `${className} overlap-prevention`;
+            }
+            
             return `${className} available`;
         }
 
         // Verificar si una fecha es seleccionable
         function isDateSelectable(date) {
             const dateString = formatDate(date);
-
+            
             // No seleccionable si es domingo
             if (date.getDay() === 0) return false;
-
+            
             // No seleccionable si es festivo
             if (holidays2026.includes(dateString)) return false;
-
+            
             // No seleccionable si está en las vacaciones de otro usuario
             if (isDateInOtherUserVacation(dateString)) return false;
-
+            
+            // No seleccionable si está en las vacaciones del usuario actual
+            if (isDateInCurrentUserVacation(dateString)) return false;
+            
+            // No seleccionable si ya tiene dos períodos
+            if (currentUser.per1start && currentUser.per2start) return false;
+            
+            // No seleccionable si causaría solapamiento
+            if (wouldCauseOverlap(date)) return false;
+            
             return true;
         }
 
@@ -827,32 +848,32 @@
         function isDateInOtherUserVacation(dateString) {
             for (const vacation of allVacations) {
                 if (vacation.user === currentUser.user) continue; // Saltar el usuario actual
-
+                
                 // Verificar primer período
                 if (vacation.per1start) {
                     const startDate = new Date(vacation.per1start);
                     const endDate = new Date(startDate);
                     endDate.setDate(endDate.getDate() + 14); // 15 días incluyendo el inicio
-
+                    
                     const checkDate = new Date(dateString);
                     if (checkDate >= startDate && checkDate <= endDate) {
                         return true;
                     }
                 }
-
+                
                 // Verificar segundo período
                 if (vacation.per2start) {
                     const startDate = new Date(vacation.per2start);
                     const endDate = new Date(startDate);
                     endDate.setDate(endDate.getDate() + 14); // 15 días incluyendo el inicio
-
+                    
                     const checkDate = new Date(dateString);
                     if (checkDate >= startDate && checkDate <= endDate) {
                         return true;
                     }
                 }
             }
-
+            
             return false;
         }
 
@@ -862,84 +883,103 @@
             if (currentUser.per1start) {
                 const startDate = new Date(currentUser.per1start);
                 const endDate = new Date(startDate);
-                endDate.setDate(endDate.getDate() + 14); // 15 días incluyendo el inicio
-
+                endDate.setDate(endDate.getDate() + 14);
+                
                 const checkDate = new Date(dateString);
                 if (checkDate >= startDate && checkDate <= endDate) {
                     return true;
                 }
             }
-
+            
             // Verificar segundo período
             if (currentUser.per2start) {
                 const startDate = new Date(currentUser.per2start);
                 const endDate = new Date(startDate);
-                endDate.setDate(endDate.getDate() + 14); // 15 días incluyendo el inicio
-
+                endDate.setDate(endDate.getDate() + 14);
+                
                 const checkDate = new Date(dateString);
                 if (checkDate >= startDate && checkDate <= endDate) {
                     return true;
                 }
             }
-
+            
             return false;
         }
 
         // Verificar si una fecha está en el rango seleccionado
         function isDateInSelectedRange(date) {
             if (!selectedDate) return false;
-
+            
             const startDate = new Date(selectedDate);
             const endDate = new Date(startDate);
             endDate.setDate(endDate.getDate() + 14); // 15 días incluyendo el inicio
-
+            
             return date >= startDate && date <= endDate;
+        }
+
+        // Verificar si una fecha causaría solapamiento
+        function wouldCauseOverlap(date) {
+            const startDate = new Date(date);
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + 14); // 15 días incluyendo el inicio
+            
+            // Verificar con períodos existentes del usuario actual
+            if (currentUser.per1start) {
+                const existingStart = new Date(currentUser.per1start);
+                const existingEnd = new Date(existingStart);
+                existingEnd.setDate(existingEnd.getDate() + 14);
+                
+                if (datesOverlap(startDate, endDate, existingStart, existingEnd)) {
+                    return true;
+                }
+            }
+            
+            if (currentUser.per2start) {
+                const existingStart = new Date(currentUser.per2start);
+                const existingEnd = new Date(existingStart);
+                existingEnd.setDate(existingEnd.getDate() + 14);
+                
+                if (datesOverlap(startDate, endDate, existingStart, existingEnd)) {
+                    return true;
+                }
+            }
+            
+            // Verificar con períodos de otros usuarios
+            for (const vacation of allVacations) {
+                if (vacation.user === currentUser.user) continue; // Saltar el usuario actual
+                
+                if (vacation.per1start) {
+                    const existingStart = new Date(vacation.per1start);
+                    const existingEnd = new Date(existingStart);
+                    existingEnd.setDate(existingEnd.getDate() + 14);
+                    
+                    if (datesOverlap(startDate, endDate, existingStart, existingEnd)) {
+                        return true;
+                    }
+                }
+                
+                if (vacation.per2start) {
+                    const existingStart = new Date(vacation.per2start);
+                    const existingEnd = new Date(existingStart);
+                    existingEnd.setDate(existingEnd.getDate() + 14);
+                    
+                    if (datesOverlap(startDate, endDate, existingStart, existingEnd)) {
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
         }
 
         // Manejar selección de fecha
         function handleDateSelection(date) {
             // Verificar que la fecha sea seleccionable
             if (!isDateSelectable(date)) return;
-
-            // Verificar que no haya solapamiento con períodos existentes
-            if (wouldOverlapWithExistingPeriods(date)) {
-                alert('La selección se solapa con un período de vacaciones existente.');
-                return;
-            }
-
+            
             selectedDate = date;
             updateCalendar();
             updateActionPanel();
-        }
-
-        // Verificar si una selección se solapa con períodos existentes
-        function wouldOverlapWithExistingPeriods(startDate) {
-            const endDate = new Date(startDate);
-            endDate.setDate(endDate.getDate() + 14); // 15 días incluyendo el inicio
-
-            // Verificar con primer período
-            if (currentUser.per1start) {
-                const existingStart = new Date(currentUser.per1start);
-                const existingEnd = new Date(existingStart);
-                existingEnd.setDate(existingEnd.getDate() + 14);
-
-                if (datesOverlap(startDate, endDate, existingStart, existingEnd)) {
-                    return true;
-                }
-            }
-
-            // Verificar con segundo período
-            if (currentUser.per2start) {
-                const existingStart = new Date(currentUser.per2start);
-                const existingEnd = new Date(existingStart);
-                existingEnd.setDate(existingEnd.getDate() + 14);
-
-                if (datesOverlap(startDate, endDate, existingStart, existingEnd)) {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         // Verificar si dos rangos de fechas se solapan
@@ -957,16 +997,16 @@
             if (selectedDate) {
                 const endDate = new Date(selectedDate);
                 endDate.setDate(endDate.getDate() + 14);
-
+                
                 const startFormatted = formatDate(selectedDate, true);
                 const endFormatted = formatDate(endDate, true);
-
+                
                 if (selectionMode === 'first') {
                     period1Info.textContent = `${startFormatted} al ${endFormatted}`;
                 } else {
                     period2Info.textContent = `${startFormatted} al ${endFormatted}`;
                 }
-
+                
                 requestVacationBtn.disabled = false;
             } else {
                 requestVacationBtn.disabled = true;
@@ -980,29 +1020,29 @@
                 const startDate = new Date(currentUser.per1start);
                 const endDate = new Date(startDate);
                 endDate.setDate(endDate.getDate() + 14);
-
+                
                 const startFormatted = formatDate(startDate, true);
                 const endFormatted = formatDate(endDate, true);
-
+                
                 period1Info.textContent = `${startFormatted} al ${endFormatted}`;
             } else {
                 period1Info.textContent = 'No seleccionado';
             }
-
+            
             // Segundo período
             if (currentUser.per2start) {
                 const startDate = new Date(currentUser.per2start);
                 const endDate = new Date(startDate);
                 endDate.setDate(endDate.getDate() + 14);
-
+                
                 const startFormatted = formatDate(startDate, true);
                 const endFormatted = formatDate(endDate, true);
-
+                
                 period2Info.textContent = `${startFormatted} al ${endFormatted}`;
             } else {
                 period2Info.textContent = 'No seleccionado';
             }
-
+            
             // Determinar modo de selección
             if (!currentUser.per1start) {
                 selectionMode = 'first';
@@ -1016,15 +1056,15 @@
         // Manejar solicitud de vacaciones
         function handleVacationRequest() {
             if (!selectedDate) return;
-
+            
             const dateString = formatDate(selectedDate);
-
+            
             if (selectionMode === 'first') {
                 currentUser.per1start = dateString;
             } else if (selectionMode === 'second') {
                 currentUser.per2start = dateString;
             }
-
+            
             // Actualizar en allVacations
             const userVacation = allVacations.find(v => v.user === currentUser.user);
             if (userVacation) {
@@ -1040,16 +1080,16 @@
                     per2start: selectionMode === 'second' ? dateString : ''
                 });
             }
-
+            
             // Guardar cambios
             saveVacations();
-
+            
             // Actualizar interfaz
             updatePeriodInfo();
             selectedDate = null;
             updateCalendar();
             updateActionPanel();
-
+            
             alert('Vacaciones solicitadas correctamente.');
         }
 
@@ -1065,11 +1105,11 @@
             if (humanReadable) {
                 return date.toLocaleDateString('es-ES');
             }
-
+            
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
-
+            
             return `${year}-${month}-${day}`;
         }
     </script>
