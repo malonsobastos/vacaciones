@@ -1,1 +1,826 @@
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario de Vacaciones 2026</title>
+    <!-- Material Design Lite -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --secondary: #ff4081;
+            --success: #4caf50;
+            --selected: #2196f3;
+            --saved: #8bc34a;
+            --danger: #f44336;
+            --light-danger: #ffcdd2;
+            --blocked: #9e9e9e;
+            --light: #f5f5f5;
+            --dark: #212121;
+            --gray: #757575;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+        }
+        
+        body {
+            background-color: #fafafa;
+            color: var(--dark);
+            line-height: 1.6;
+            padding-bottom: 80px; /* Espacio para los botones flotantes */
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 2px;
+            box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
+        }
+        
+        .instructions {
+            background-color: white;
+            padding: 20px;
+            border-radius: 2px;
+            margin: 20px 0;
+            box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
+        }
+        
+        .color-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .color-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .color-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 2px;
+        }
+        
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .month {
+            background-color: white;
+            border-radius: 2px;
+            padding: 15px;
+            box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
+        }
+        
+        .month-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+        
+        .weekdays, .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        
+        .weekday, .day {
+            text-align: center;
+            padding: 8px 5px;
+        }
+        
+        .weekday {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        .day {
+            border-radius: 2px;
+            transition: all 0.2s;
+        }
+        
+        .day.selectable {
+            background-color: #e3f2fd;
+            cursor: pointer;
+        }
+        
+        .day.selectable:hover {
+            background-color: #bbdefb;
+        }
+        
+        .day.selected {
+            background-color: var(--selected);
+            color: white;
+        }
+        
+        .day.saved {
+            background-color: var(--saved);
+        }
+        
+        .day.holiday {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .day.occupied {
+            background-color: var(--light-danger);
+        }
+        
+        .day.blocked {
+            background-color: var(--blocked);
+        }
+        
+        .day.other-month {
+            color: #bdbdbd;
+        }
+        
+        .floating-actions {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            padding: 15px;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            z-index: 1000;
+        }
+        
+        #toast-container {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            z-index: 1001;
+        }
+        
+        .toast {
+            background-color: #323232;
+            color: white;
+            padding: 14px 24px;
+            border-radius: 2px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            max-width: 300px;
+            animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
+        }
+        
+        .toast.error {
+            background-color: var(--danger);
+        }
+        
+        .toast.success {
+            background-color: var(--success);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+        
+        @media (max-width: 768px) {
+            .calendar {
+                grid-template-columns: 1fr;
+            }
+            
+            .floating-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .floating-actions button {
+                width: 90%;
+            }
+            
+            #toast-container {
+                bottom: 140px;
+                right: 10px;
+                left: 10px;
+            }
+            
+            .toast {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="mdl-layout__header" id="header" style="display: none;">
+        <div class="mdl-layout__header-row">
+            <span class="mdl-layout-title">Calendario de Vacaciones 2026</span>
+            <div class="mdl-layout-spacer"></div>
+            <div class="user-info">
+                <span id="user-name"></span>
+                <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" id="logout-btn">
+                    Cerrar Sesión
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Pantalla de Login -->
+        <div id="login-screen">
+            <div class="login-container">
+                <h2 style="text-align: center; margin-bottom: 20px;">Iniciar Sesión</h2>
+                <form class="login-form" id="login-form">
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 100%;">
+                        <input class="mdl-textfield__input" type="text" id="username" required>
+                        <label class="mdl-textfield__label" for="username">Usuario</label>
+                    </div>
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 100%; margin-top: 20px;">
+                        <input class="mdl-textfield__input" type="password" id="password" required>
+                        <label class="mdl-textfield__label" for="password">Contraseña</label>
+                    </div>
+                    <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" style="width: 100%; margin-top: 20px;">
+                        Acceder
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Pantalla Principal -->
+        <div id="main-screen" style="display: none;">
+            <div class="instructions">
+                <h2>Bienvenido, <span id="welcome-name"></span></h2>
+                <p>Instrucciones:</p>
+                <ul>
+                    <li>Selecciona un <strong>sábado, lunes, o día alternativo</strong> para marcar el inicio de tus vacaciones.</li>
+                    <li>Los días alternativos son: día no festivo siguiente a un lunes festivo, o día no festivo anterior a un sábado festivo.</li>
+                    <li>Al seleccionar un día, se marcarán automáticamente los <strong>15 días siguientes</strong> (2 quincenas).</li>
+                    <li>Los días <strong>festivos y domingos</strong> no son seleccionables.</li>
+                    <li>Los días ya ocupados por otros compañeros tampoco son seleccionables.</li>
+                    <li>Los días que causarían solapamiento aparecen en gris y no son seleccionables.</li>
+                    <li>Solo puedes seleccionar <strong>2 quincenas de vacaciones</strong> como máximo.</li>
+                </ul>
+                
+                <div class="color-legend">
+                    <div class="color-item">
+                        <div class="color-box" style="background-color: var(--danger);"></div>
+                        <span>Festivos y domingos</span>
+                    </div>
+                    <div class="color-item">
+                        <div class="color-box" style="background-color: var(--light-danger);"></div>
+                        <span>Ocupado por otros</span>
+                    </div>
+                    <div class="color-item">
+                        <div class="color-box" style="background-color: var(--blocked);"></div>
+                        <span>Días con solapamiento</span>
+                    </div>
+                    <div class="color-item">
+                        <div class="color-box" style="background-color: var(--saved);"></div>
+                        <span>Tus vacaciones guardadas</span>
+                    </div>
+                    <div class="color-item">
+                        <div class="color-box" style="background-color: var(--selected);"></div>
+                        <span>Vacaciones seleccionadas</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="calendar" id="calendar">
+                <!-- El calendario se generará con JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Botones flotantes -->
+    <div class="floating-actions" id="floating-actions" style="display: none;">
+        <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" id="save-btn" disabled>
+            Confirmar Vacaciones
+        </button>
+        <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" id="clear-btn">
+            Limpiar Selección
+        </button>
+    </div>
+    
+    <!-- Contenedor para toasts -->
+    <div id="toast-container"></div>
+
+    <script>
+        // Datos iniciales
+        const JSONBIN_ACCESS_KEY = '$2a$10$MlGAc7wr39JyI2pwAAv.9uqyPUYR3VlDX93bkTfMCQ1vscDiV5zmS';
+        let JSONBIN_ID = '69137969d0ea881f40e23de6';
+        
+        // Festivos 2026 para Vigo
+        const holidays2026 = [
+            '2026-01-01', // Año Nuevo
+            '2026-01-06', // Reyes
+            '2026-04-02', // Jueves Santo
+            '2026-04-03', // Viernes Santo
+            '2026-05-01', // Día del Trabajo
+            '2026-07-25', // Santiago Apóstol
+            '2026-08-15', // Asunción
+            '2026-10-12', // Fiesta Nacional
+            '2026-11-01', // Todos los Santos
+            '2026-12-06', // Constitución
+            '2026-12-08', // Inmaculada
+            '2026-12-25', // Navidad
+            // Festivos locales de Vigo
+            '2026-08-16' // Fiesta local de Vigo
+        ];
+        
+        // Estado de la aplicación
+        let currentUser = null;
+        let selectedStartDate = null;
+        let vacationPeriod = [];
+        let allUsers = [];
+        
+        // Elementos DOM
+        const loginScreen = document.getElementById('login-screen');
+        const mainScreen = document.getElementById('main-screen');
+        const header = document.getElementById('header');
+        const loginForm = document.getElementById('login-form');
+        const userNameSpan = document.getElementById('user-name');
+        const welcomeNameSpan = document.getElementById('welcome-name');
+        const calendarElement = document.getElementById('calendar');
+        const saveBtn = document.getElementById('save-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const floatingActions = document.getElementById('floating-actions');
+        const toastContainer = document.getElementById('toast-container');
+        
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', init);
+        
+        async function init() {
+            // Cargar datos existentes
+            await loadData();
+            
+            // Configurar event listeners
+            loginForm.addEventListener('submit', handleLogin);
+            saveBtn.addEventListener('click', saveVacations);
+            clearBtn.addEventListener('click', clearSelection);
+            logoutBtn.addEventListener('click', handleLogout);
+        }
+        
+        // Función para mostrar toasts
+        function showToast(message, type = '') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            toastContainer.appendChild(toast);
+            
+            // Eliminar el toast después de 3 segundos
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 3000);
+        }
+        
+        async function loadData() {
+            try {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
+                    headers: {
+                        'X-Master-Key': JSONBIN_ACCESS_KEY
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    allUsers = data.record.users || [];
+                } else {
+                    console.error('Error al cargar datos:', response.status);
+                    allUsers = [];
+                }
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+                allUsers = [];
+            }
+        }
+        
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Verificar credenciales
+            const user = allUsers.find(u => u.user === username && u.pass === password);
+            
+            if (user) {
+                // Si el usuario es admin, redirigir a la página de administración
+                if (user.admin === 1) {
+                    window.location.href = 'admin.html';
+                    return;
+                }
+                
+                currentUser = user;
+                showMainScreen();
+            } else {
+                showToast('Usuario o contraseña incorrectos', 'error');
+            }
+        }
+        
+        function showMainScreen() {
+            loginScreen.style.display = 'none';
+            mainScreen.style.display = 'block';
+            header.style.display = 'block';
+            floatingActions.style.display = 'flex';
+            
+            userNameSpan.textContent = currentUser.name;
+            welcomeNameSpan.textContent = currentUser.name;
+            
+            generateCalendar();
+        }
+        
+        function handleLogout() {
+            currentUser = null;
+            selectedStartDate = null;
+            vacationPeriod = [];
+            
+            header.style.display = 'none';
+            mainScreen.style.display = 'none';
+            loginScreen.style.display = 'block';
+            floatingActions.style.display = 'none';
+            
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+        
+        function generateCalendar() {
+            calendarElement.innerHTML = '';
+            
+            for (let month = 0; month < 12; month++) {
+                const monthElement = document.createElement('div');
+                monthElement.className = 'month';
+                
+                const monthHeader = document.createElement('div');
+                monthHeader.className = 'month-header';
+                // Formatear el nombre del mes en mayúsculas
+                const monthName = new Date(2026, month).toLocaleDateString('es-ES', { month: 'long' });
+                monthHeader.textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+                monthElement.appendChild(monthHeader);
+                
+                const weekdaysElement = document.createElement('div');
+                weekdaysElement.className = 'weekdays';
+                
+                // Días de la semana empezando por lunes
+                const weekdays = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá', 'Do'];
+                weekdays.forEach(day => {
+                    const dayElement = document.createElement('div');
+                    dayElement.className = 'weekday';
+                    dayElement.textContent = day;
+                    weekdaysElement.appendChild(dayElement);
+                });
+                
+                monthElement.appendChild(weekdaysElement);
+                
+                const daysElement = document.createElement('div');
+                daysElement.className = 'days';
+                
+                const firstDay = new Date(2026, month, 1);
+                const lastDay = new Date(2026, month + 1, 0);
+                
+                // Calcular el primer día a mostrar (lunes de la semana que contiene el primer día del mes)
+                let startingDay = firstDay.getDay() - 1;
+                if (startingDay < 0) startingDay = 6;
+                
+                // Días del mes anterior
+                const prevMonthLastDay = new Date(2026, month, 0).getDate();
+                for (let i = 0; i < startingDay; i++) {
+                    const dayElement = document.createElement('div');
+                    dayElement.className = 'day other-month';
+                    dayElement.textContent = prevMonthLastDay - startingDay + i + 1;
+                    daysElement.appendChild(dayElement);
+                }
+                
+                // Días del mes actual
+                for (let day = 1; day <= lastDay.getDate(); day++) {
+                    const date = new Date(2026, month, day);
+                    const dateString = formatDate(date);
+                    
+                    const dayElement = document.createElement('div');
+                    dayElement.className = 'day';
+                    dayElement.textContent = day;
+                    dayElement.dataset.date = dateString;
+                    
+                    // Verificar si es festivo o domingo
+                    if (isHoliday(date) || date.getDay() === 0) {
+                        dayElement.classList.add('holiday');
+                    } 
+                    // Verificar si está ocupado por otros usuarios
+                    else if (isOccupied(date)) {
+                        dayElement.classList.add('occupied');
+                    }
+                    // Verificar si es potencialmente seleccionable (sin considerar solapamiento)
+                    else if (isPotentiallySelectable(date)) {
+                        // Si es potencialmente seleccionable pero causaría solapamiento
+                        if (wouldOverlap(date)) {
+                            dayElement.classList.add('blocked');
+                        } else {
+                            dayElement.classList.add('selectable');
+                            dayElement.addEventListener('click', () => selectDate(date));
+                        }
+                    }
+                    
+                    // Verificar si está en las vacaciones seleccionadas (pero no guardadas)
+                    if (vacationPeriod.includes(dateString)) {
+                        dayElement.classList.add('selected');
+                    }
+                    
+                    // Verificar si está en las vacaciones guardadas del usuario
+                    if (isInSavedVacations(date)) {
+                        dayElement.classList.add('saved');
+                    }
+                    
+                    daysElement.appendChild(dayElement);
+                }
+                
+                monthElement.appendChild(daysElement);
+                calendarElement.appendChild(monthElement);
+            }
+            
+            // Actualizar estado del botón
+            updateSaveButtonState();
+        }
+        
+        function isHoliday(date) {
+            const dateString = formatDate(date);
+            return holidays2026.includes(dateString);
+        }
+        
+        function isOccupied(date) {
+            const dateString = formatDate(date);
+            
+            // Buscar usuarios que coincidan en company, depart, zone (en ese orden)
+            const relevantUsers = allUsers.filter(user => {
+                if (user.user === currentUser.user) return false; // Excluir al usuario actual
+                if (user.admin === 1) return false; // Excluir administradores
+                
+                // Si el usuario actual tiene zona, buscar por company, depart y zone
+                if (currentUser.zone) {
+                    return user.company === currentUser.company && 
+                           user.depart === currentUser.depart && 
+                           user.zone === currentUser.zone;
+                }
+                // Si no tiene zona, buscar por company y depart
+                else if (currentUser.depart) {
+                    return user.company === currentUser.company && 
+                           user.depart === currentUser.depart;
+                }
+                // Si no tiene depart, buscar solo por company
+                else {
+                    return user.company === currentUser.company;
+                }
+            });
+            
+            // Verificar si la fecha está ocupada por algún usuario relevante
+            for (const user of relevantUsers) {
+                if (user.per1start || user.per2start) {
+                    // Calcular períodos de vacaciones
+                    const periods = [];
+                    if (user.per1start) periods.push(user.per1start);
+                    if (user.per2start) periods.push(user.per2start);
+                    
+                    for (const periodStart of periods) {
+                        const startDate = new Date(periodStart);
+                        const endDate = new Date(startDate);
+                        endDate.setDate(endDate.getDate() + 14); // 15 días incluyendo el inicio
+                        
+                        if (date >= startDate && date <= endDate) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            
+            return false;
+        }
+        
+        function wouldOverlap(date) {
+            // Verificar si seleccionar esta fecha causaría solapamiento con otros usuarios
+            const endDate = new Date(date);
+            endDate.setDate(endDate.getDate() + 14);
+            
+            // Buscar usuarios que coincidan en company, depart, zone (en ese orden)
+            const relevantUsers = allUsers.filter(user => {
+                if (user.user === currentUser.user) return false; // Excluir al usuario actual
+                if (user.admin === 1) return false; // Excluir administradores
+                
+                // Si el usuario actual tiene zona, buscar por company, depart y zone
+                if (currentUser.zone) {
+                    return user.company === currentUser.company && 
+                           user.depart === currentUser.depart && 
+                           user.zone === currentUser.zone;
+                }
+                // Si no tiene zona, buscar por company y depart
+                else if (currentUser.depart) {
+                    return user.company === currentUser.company && 
+                           user.depart === currentUser.depart;
+                }
+                // Si no tiene depart, buscar solo por company
+                else {
+                    return user.company === currentUser.company;
+                }
+            });
+            
+            // Verificar si el período seleccionado se solapa con las vacaciones de algún usuario relevante
+            for (const user of relevantUsers) {
+                if (user.per1start || user.per2start) {
+                    // Calcular períodos de vacaciones
+                    const periods = [];
+                    if (user.per1start) periods.push(user.per1start);
+                    if (user.per2start) periods.push(user.per2start);
+                    
+                    for (const periodStart of periods) {
+                        const userStartDate = new Date(periodStart);
+                        const userEndDate = new Date(userStartDate);
+                        userEndDate.setDate(userEndDate.getDate() + 14);
+                        
+                        // Verificar si hay solapamiento
+                        if ((date >= userStartDate && date <= userEndDate) ||
+                            (endDate >= userStartDate && endDate <= userEndDate) ||
+                            (date <= userStartDate && endDate >= userEndDate)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            
+            return false;
+        }
+        
+        function isPotentiallySelectable(date) {
+            // Verificar si el usuario ya tiene 2 períodos de vacaciones
+            if (currentUser.per1start && currentUser.per2start) {
+                return false;
+            }
+            
+            const dayOfWeek = date.getDay();
+            
+            // Días que siempre son seleccionables (lunes y sábados)
+            if (dayOfWeek === 1 || dayOfWeek === 6) {
+                return !isHoliday(date) && !isOccupied(date);
+            }
+            
+            // Días alternativos: día siguiente a un lunes festivo (martes)
+            if (dayOfWeek === 2) {
+                const previousMonday = new Date(date);
+                previousMonday.setDate(previousMonday.getDate() - 1);
+                return isHoliday(previousMonday) && !isHoliday(date) && !isOccupied(date);
+            }
+            
+            // Días alternativos: día anterior a un sábado festivo (viernes)
+            if (dayOfWeek === 5) {
+                const nextSaturday = new Date(date);
+                nextSaturday.setDate(nextSaturday.getDate() + 1);
+                return isHoliday(nextSaturday) && !isHoliday(date) && !isOccupied(date);
+            }
+            
+            return false;
+        }
+        
+        function isInSavedVacations(date) {
+            // Verificar si la fecha está en las vacaciones guardadas del usuario actual
+            const dateString = formatDate(date);
+            
+            // Verificar si está en el primer período
+            if (currentUser.per1start) {
+                const startDate1 = new Date(currentUser.per1start);
+                const endDate1 = new Date(startDate1);
+                endDate1.setDate(endDate1.getDate() + 14);
+                
+                if (date >= startDate1 && date <= endDate1) {
+                    return true;
+                }
+            }
+            
+            // Verificar si está en el segundo período
+            if (currentUser.per2start) {
+                const startDate2 = new Date(currentUser.per2start);
+                const endDate2 = new Date(startDate2);
+                endDate2.setDate(endDate2.getDate() + 14);
+                
+                if (date >= startDate2 && date <= endDate2) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        function selectDate(date) {
+            if (!isPotentiallySelectable(date) || wouldOverlap(date)) return;
+            
+            selectedStartDate = date;
+            vacationPeriod = [];
+            
+            // Calcular los 15 días siguientes
+            for (let i = 0; i < 15; i++) {
+                const vacationDate = new Date(date);
+                vacationDate.setDate(vacationDate.getDate() + i);
+                vacationPeriod.push(formatDate(vacationDate));
+            }
+            
+            generateCalendar();
+        }
+        
+        function clearSelection() {
+            selectedStartDate = null;
+            vacationPeriod = [];
+            generateCalendar();
+        }
+        
+        function updateSaveButtonState() {
+            // Habilitar el botón solo si hay una selección válida y el usuario no tiene ya 2 períodos
+            saveBtn.disabled = !selectedStartDate || (currentUser.per1start && currentUser.per2start);
+        }
+        
+        async function saveVacations() {
+            if (!selectedStartDate) {
+                showToast('Por favor, selecciona una fecha de inicio para tus vacaciones.', 'error');
+                return;
+            }
+            
+            // Verificar si ya tiene períodos guardados
+            const periodToUpdate = currentUser.per1start ? 'per2start' : 'per1start';
+            
+            // Actualizar usuario actual
+            currentUser[periodToUpdate] = formatDate(selectedStartDate);
+            
+            // Actualizar en la lista de usuarios
+            const userIndex = allUsers.findIndex(u => u.user === currentUser.user);
+            if (userIndex !== -1) {
+                allUsers[userIndex] = currentUser;
+                
+                // Guardar en JSONBin
+                try {
+                    const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Master-Key': JSONBIN_ACCESS_KEY
+                        },
+                        body: JSON.stringify({ users: allUsers })
+                    });
+                    
+                    if (response.ok) {
+                        showToast('Vacaciones guardadas correctamente.', 'success');
+                        // Recargar datos para asegurar que tenemos la versión más actual
+                        await loadData();
+                        // Actualizar el usuario actual con los datos guardados
+                        currentUser = allUsers.find(u => u.user === currentUser.user);
+                        clearSelection();
+                    } else {
+                        showToast('Error al guardar las vacaciones. Inténtalo de nuevo.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error al guardar:', error);
+                    showToast('Error de conexión. Inténtalo de nuevo.', 'error');
+                }
+            }
+        }
+        
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+    </script>
+</body>
+</html>
