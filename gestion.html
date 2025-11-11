@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Vacaciones</title>
+    <!-- Material Design Lite -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --secondary: #ff4081;
+            --success: #4caf50;
+            --danger: #f44336;
+            --light: #f5f5f5;
+            --dark: #212121;
+            --gray: #757575;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+        }
+        
+        body {
+            background-color: #fafafa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 2px;
+            box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
+        }
+        
+        .admin-panel {
+            background-color: white;
+            padding: 20px;
+            border-radius: 2px;
+            margin: 20px 0;
+            box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
+        }
+        
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .user-table th,
+        .user-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .user-table th {
+            background-color: #f5f5f5;
+            font-weight: 500;
+        }
+        
+        .user-table tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .date-input {
+            border: 1px solid #e0e0e0;
+            padding: 8px;
+            border-radius: 2px;
+            width: 100%;
+        }
+        
+        .actions-cell {
+            display: flex;
+            gap: 10px;
+        }
+        
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1001;
+        }
+        
+        .toast {
+            background-color: #323232;
+            color: white;
+            padding: 14px 24px;
+            border-radius: 2px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            max-width: 300px;
+            animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
+        }
+        
+        .toast.error {
+            background-color: var(--danger);
+        }
+        
+        .toast.success {
+            background-color: var(--success);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+        
+        @media (max-width: 768px) {
+            .user-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .actions-cell {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="mdl-layout__header" id="header" style="display: none;">
+        <div class="mdl-layout__header-row">
+            <span class="mdl-layout-title">Panel de Administración - Vacaciones</span>
+            <div class="mdl-layout-spacer"></div>
+            <div class="user-info">
+                <span id="user-name"></span>
+                <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" id="calendar-btn">
+                    Ir al Calendario
+                </button>
+                <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" id="logout-btn">
+                    Cerrar Sesión
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Pantalla de Login -->
+        <div id="login-screen">
+            <div class="login-container">
+                <h2 style="text-align: center; margin-bottom: 20px;">Iniciar Sesión - Administración</h2>
+                <form class="login-form" id="login-form">
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 100%;">
+                        <input class="mdl-textfield__input" type="text" id="username" required>
+                        <label class="mdl-textfield__label" for="username">Usuario</label>
+                    </div>
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 100%; margin-top: 20px;">
+                        <input class="mdl-textfield__input" type="password" id="password" required>
+                        <label class="mdl-textfield__label" for="password">Contraseña</label>
+                    </div>
+                    <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" style="width: 100%; margin-top: 20px;">
+                        Acceder
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Panel de Administración -->
+        <div id="admin-screen" style="display: none;">
+            <div class="admin-panel">
+                <h2>Gestión de Vacaciones de Usuarios</h2>
+                <p>Desde este panel puedes gestionar las vacaciones de todos los usuarios. Puedes modificar o eliminar las fechas de vacaciones.</p>
+                
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Nombre</th>
+                            <th>Empresa</th>
+                            <th>Departamento</th>
+                            <th>Zona</th>
+                            <th>1ª Quincena</th>
+                            <th>2ª Quincena</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <!-- Los usuarios se cargarán aquí -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contenedor para toasts -->
+    <div id="toast-container"></div>
+
+    <script>
+        // Datos iniciales
+        const JSONBIN_ACCESS_KEY = '$2a$10$MlGAc7wr39JyI2pwAAv.9uqyPUYR3VlDX93bkTfMCQ1vscDiV5zmS';
+        let JSONBIN_ID = '69137969d0ea881f40e23de6';
+        
+        // Estado de la aplicación
+        let currentUser = null;
+        let allUsers = [];
+        
+        // Elementos DOM
+        const loginScreen = document.getElementById('login-screen');
+        const adminScreen = document.getElementById('admin-screen');
+        const header = document.getElementById('header');
+        const loginForm = document.getElementById('login-form');
+        const userNameSpan = document.getElementById('user-name');
+        const usersTableBody = document.getElementById('users-table-body');
+        const logoutBtn = document.getElementById('logout-btn');
+        const calendarBtn = document.getElementById('calendar-btn');
+        const toastContainer = document.getElementById('toast-container');
+        
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', init);
+        
+        async function init() {
+            // Cargar datos existentes
+            await loadData();
+            
+            // Configurar event listeners
+            loginForm.addEventListener('submit', handleLogin);
+            logoutBtn.addEventListener('click', handleLogout);
+            calendarBtn.addEventListener('click', goToCalendar);
+        }
+        
+        // Función para mostrar toasts
+        function showToast(message, type = '') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            toastContainer.appendChild(toast);
+            
+            // Eliminar el toast después de 3 segundos
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 3000);
+        }
+        
+        async function loadData() {
+            try {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
+                    headers: {
+                        'X-Master-Key': JSONBIN_ACCESS_KEY
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    allUsers = data.record.users || [];
+                } else {
+                    console.error('Error al cargar datos:', response.status);
+                    allUsers = [];
+                }
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+                allUsers = [];
+            }
+        }
+        
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Verificar credenciales
+            const user = allUsers.find(u => u.user === username && u.pass === password);
+            
+            if (user && user.admin === 1) {
+                currentUser = user;
+                showAdminScreen();
+            } else {
+                showToast('Acceso denegado. Solo usuarios administradores pueden acceder.', 'error');
+            }
+        }
+        
+        function showAdminScreen() {
+            loginScreen.style.display = 'none';
+            adminScreen.style.display = 'block';
+            header.style.display = 'block';
+            
+            userNameSpan.textContent = currentUser.name;
+            
+            generateUsersTable();
+        }
+        
+        function generateUsersTable() {
+            usersTableBody.innerHTML = '';
+            
+            // Filtrar usuarios que no son administradores
+            const nonAdminUsers = allUsers.filter(user => user.admin !== 1);
+            
+            nonAdminUsers.forEach(user => {
+                const row = document.createElement('tr');
+                
+                // Usuario
+                const userCell = document.createElement('td');
+                userCell.textContent = user.user;
+                row.appendChild(userCell);
+                
+                // Nombre
+                const nameCell = document.createElement('td');
+                nameCell.textContent = user.name;
+                row.appendChild(nameCell);
+                
+                // Empresa
+                const companyCell = document.createElement('td');
+                companyCell.textContent = user.company || '-';
+                row.appendChild(companyCell);
+                
+                // Departamento
+                const departCell = document.createElement('td');
+                departCell.textContent = user.depart || '-';
+                row.appendChild(departCell);
+                
+                // Zona
+                const zoneCell = document.createElement('td');
+                zoneCell.textContent = user.zone || '-';
+                row.appendChild(zoneCell);
+                
+                // 1ª Quincena
+                const per1Cell = document.createElement('td');
+                const per1Input = document.createElement('input');
+                per1Input.type = 'date';
+                per1Input.className = 'date-input';
+                per1Input.value = user.per1start || '';
+                per1Input.dataset.user = user.user;
+                per1Input.dataset.period = 'per1start';
+                per1Cell.appendChild(per1Input);
+                row.appendChild(per1Cell);
+                
+                // 2ª Quincena
+                const per2Cell = document.createElement('td');
+                const per2Input = document.createElement('input');
+                per2Input.type = 'date';
+                per2Input.className = 'date-input';
+                per2Input.value = user.per2start || '';
+                per2Input.dataset.user = user.user;
+                per2Input.dataset.period = 'per2start';
+                per2Cell.appendChild(per2Input);
+                row.appendChild(per2Cell);
+                
+                // Acciones
+                const actionsCell = document.createElement('td');
+                actionsCell.className = 'actions-cell';
+                
+                const saveButton = document.createElement('button');
+                saveButton.className = 'mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored';
+                saveButton.textContent = 'Guardar';
+                saveButton.addEventListener('click', () => saveUserVacations(user.user, per1Input.value, per2Input.value));
+                actionsCell.appendChild(saveButton);
+                
+                const clearButton = document.createElement('button');
+                clearButton.className = 'mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect';
+                clearButton.textContent = 'Limpiar';
+                clearButton.addEventListener('click', () => {
+                    per1Input.value = '';
+                    per2Input.value = '';
+                    saveUserVacations(user.user, '', '');
+                });
+                actionsCell.appendChild(clearButton);
+                
+                row.appendChild(actionsCell);
+                
+                usersTableBody.appendChild(row);
+            });
+        }
+        
+        async function saveUserVacations(username, per1start, per2start) {
+            // Encontrar el usuario
+            const userIndex = allUsers.findIndex(u => u.user === username);
+            
+            if (userIndex !== -1) {
+                // Actualizar las vacaciones del usuario
+                allUsers[userIndex].per1start = per1start || '';
+                allUsers[userIndex].per2start = per2start || '';
+                
+                // Guardar en JSONBin
+                try {
+                    const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Master-Key': JSONBIN_ACCESS_KEY
+                        },
+                        body: JSON.stringify({ users: allUsers })
+                    });
+                    
+                    if (response.ok) {
+                        showToast(`Vacaciones de ${username} guardadas correctamente.`, 'success');
+                    } else {
+                        showToast('Error al guardar las vacaciones. Inténtalo de nuevo.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error al guardar:', error);
+                    showToast('Error de conexión. Inténtalo de nuevo.', 'error');
+                }
+            }
+        }
+        
+        function goToCalendar() {
+            // Redirigir al calendario principal
+            window.location.href = 'calendario.html';
+        }
+        
+        function handleLogout() {
+            currentUser = null;
+            
+            header.style.display = 'none';
+            adminScreen.style.display = 'none';
+            loginScreen.style.display = 'block';
+            
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+    </script>
+</body>
+</html>
