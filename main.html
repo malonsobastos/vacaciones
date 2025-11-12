@@ -572,7 +572,7 @@
             return monthElement;
         }
 
-        // ✅ CORREGIDO: permite clases combinadas (saved + holiday/sunday)
+        // CORREGIDO: permite clases combinadas (saved + holiday/sunday)
         function createDayElement(date) {
             const dateString = formatDate(date);
             const dayElement = document.createElement('div');
@@ -621,7 +621,7 @@
             return holidays2026.includes(formatDate(date));
         }
 
-        // ✅ CORREGIDO: Comparación robusta por string
+        // CORREGIDO: Comparación robusta por string
         function isOccupied(date) {
             const ds = formatDate(date);
             const relevantUsers = getRelevantUsers();
@@ -639,7 +639,7 @@
             return false;
         }
 
-        // ✅ CORREGIDO: wouldOverlap (sin auto-bloqueo, solo otros + otro período tuyo)
+        // CORREGIDO: wouldOverlap (sin auto-bloqueo, solo otros + otro período tuyo)
         function wouldOverlap(date) {
             const endDate = new Date(date);
             endDate.setDate(endDate.getDate() + 14);
@@ -787,7 +787,7 @@
             return false;
         }
 
-        // ✅ CORREGIDO: ahora usa comparación por string robusta
+        // CORREGIDO: ahora usa comparación por string robusta
         function isInSavedVacations(date) {
             const ds = formatDate(date);
             
@@ -946,8 +946,7 @@
             errorMessage.textContent = message;
             errorDialog.showModal();
         }
-
-        // ✅ CORREGIDO: Robusto, acepta Date o string
+        
         function formatDate(date) {
             const d = new Date(date);
             const year = d.getFullYear();
