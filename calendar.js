@@ -169,11 +169,11 @@ function renderLegend() {
     $legend.innerHTML = `
         <div class="color-item">
             <span class="color-box" style="background: var(--selectable);"></span>
-            <span>Seleccionable</span>
+            <span>Día seleccionable</span>
         </div>
         <div class="color-item">
             <span class="color-box" style="background: var(--selected);"></span>
-            <span>No guardados</span>
+            <span>Dias seleccionados no guardados</span>
         </div>
         <div class="color-item">
             <span class="color-box" style="background: var(--saved);"></span>
@@ -185,17 +185,17 @@ function renderLegend() {
         </div>
         <div class="color-item">
             <span class="color-box" style="background: var(--occupied);"></span>
-            <span>Vacaciones de otro</span>
+            <span>Vacaciones de otro usuario</span>
         </div>
         ${hasExclusions ? `
         <div class="color-item">
             <span class="color-box" style="background: var(--excluded);"></span>
-            <span>Excluido por empresa</span>
+            <span>Día excluido por empresa</span>
         </div>
         ` : ''}
         <div class="color-item">
             <span class="color-box" style="background: var(--blocked);"></span>
-            <span>Solapamiento</span>
+            <span>Día bloqueado por solapamiento</span>
         </div>
     `;
 }
@@ -315,7 +315,7 @@ function createDay(date, isOtherMonth = false) {
         const days = rangeDays(start, end);
         return days.includes(ds);
     });
-    const isSelectable = !isSaved && !isOccupied && !isExcluded && isSelectableDay(date);
+    const isSelectable = !isSaved && !isOccupied && !isExcluded && !isSelected && isSelectableDay(date);
     const isBlocked = isSelectable && wouldOverlap(date);
 
     if (isOtherMonth) {
@@ -324,24 +324,49 @@ function createDay(date, isOtherMonth = false) {
         return el;
     }
 
+    // ORDEN DE PRIORIDAD (de mayor a menor):
+    // 1. Guardadas (saved) - mayor prioridad
+    // 2. Seleccionadas no guardadas (selected)
+    // 3. Excluidas (excluded)
+    // 4. Ocupadas por otros (occupied)
+    // 5. Festivos (holiday/sunday)
+    // 6. Bloqueadas (blocked)
+    // 7. Seleccionables (selectable)
+
+    // 1. Guardadas - mayor prioridad
     if (isSaved) {
         el.classList.add('saved');
-    } else if (isSelected) {
+    } 
+    // 2. Seleccionadas no guardadas
+    else if (isSelected) {
         el.classList.add('selected');
         el.addEventListener('click', () => removeSelection(ds));
     }
+    // 3. Excluidas
+    else if (isExcluded) {
+        el.classList.add('excluded');
+    }
+    // 4. Ocupadas por otros
+    else if (isOccupied) {
+        el.classList.add('occupied');
+    }
     
-    if (isHol) el.classList.add('holiday');
-    else if (isSun) el.classList.add('sunday');
+    // 5. Festivos (si no es guardada/seleccionada/ocupada/excluida)
+    if (!isSaved && !isSelected && !isExcluded && !isOccupied) {
+        if (isHol) el.classList.add('holiday');
+        else if (isSun) el.classList.add('sunday');
+    }
     
-    if (isExcluded) el.classList.add('excluded');
-    else if (isOccupied && !isSaved) el.classList.add('occupied');
-    
-    if (isBlocked) el.classList.add('blocked');
-    
-    if (isSelectable && !isBlocked && !isSelected && !isSaved) {
-        el.classList.add('selectable');
-        el.addEventListener('click', () => toggleSelection(date));
+    // 6. Bloqueadas por solapamiento (solo si no es ninguno de los anteriores)
+    if (!isSaved && !isSelected && !isExcluded && !isOccupied) {
+        if (isBlocked) {
+            el.classList.add('blocked');
+        }
+        // 7. Seleccionables (solo si no está bloqueada y no es ninguno de los anteriores)
+        else if (isSelectable) {
+            el.classList.add('selectable');
+            el.addEventListener('click', () => toggleSelection(date));
+        }
     }
     
     return el;

@@ -189,9 +189,20 @@ header {
     cursor: not-allowed;
 }
 
+/* Día bloqueado - debe tener menor prioridad que saved, selected, excluded, occupied */
 .day.blocked {
     background-color: var(--blocked);
     color: white;
+    opacity: 0.7; /* Un poco transparente para que no sea tan fuerte */
+}
+
+/* Asegurar que las clases con mayor prioridad se mantengan visibles */
+.day.saved.blocked,
+.day.selected.blocked,
+.day.excluded.blocked,
+.day.occupied.blocked {
+    background-color: inherit; /* Mantiene el color de la clase de mayor prioridad */
+    opacity: 1; /* Sin transparencia */
 }
 
 .day.other-month {
@@ -204,22 +215,34 @@ header {
 .day.sunday.occupied {
     background: linear-gradient(135deg, var(--occupied) 0%, var(--occupied) 50%, var(--holiday) 50%, var(--holiday) 100%);
 }
+
 .day.holiday.selected,
 .day.sunday.selected {
     background: linear-gradient(135deg, var(--selected) 0%, var(--selected) 50%, var(--holiday) 50%, var(--holiday) 100%);
 }
+
 .day.holiday.saved,
 .day.sunday.saved {
     background: linear-gradient(135deg, var(--saved) 0%, var(--saved) 50%, var(--holiday) 50%, var(--holiday) 100%);
 }
+
 .day.holiday.excluded {
     background: linear-gradient(135deg, var(--excluded) 0%, var(--excluded) 50%, var(--holiday) 50%, var(--holiday) 100%);
 }
+
 .day.sunday.excluded {
     background: linear-gradient(135deg, var(--excluded) 0%, var(--excluded) 50%, var(--sunday) 50%, var(--sunday) 100%);
 }
+
 .day.excluded.occupied {
     background: linear-gradient(135deg, var(--excluded) 0%, var(--excluded) 50%, var(--occupied) 50%, var(--occupied) 100%);
+}
+
+/* Gradientes para combinaciones con bloqueado - solo cuando no hay otras clases */
+.day.holiday.blocked:not(.saved):not(.selected):not(.excluded):not(.occupied),
+.day.sunday.blocked:not(.saved):not(.selected):not(.excluded):not(.occupied) {
+    background: linear-gradient(135deg, var(--blocked) 0%, var(--blocked) 50%, var(--holiday) 50%, var(--holiday) 100%);
+    opacity: 0.7;
 }
 
 .floating-actions {
