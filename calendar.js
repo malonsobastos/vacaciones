@@ -169,11 +169,11 @@ function renderLegend() {
     $legend.innerHTML = `
         <div class="color-item">
             <span class="color-box" style="background: var(--selectable);"></span>
-            <span>Día seleccionable</span>
+            <span>Seleccionable</span>
         </div>
         <div class="color-item">
             <span class="color-box" style="background: var(--selected);"></span>
-            <span>Dias seleccionados no guardados</span>
+            <span>Seleccionado no guardado</span>
         </div>
         <div class="color-item">
             <span class="color-box" style="background: var(--saved);"></span>
@@ -185,7 +185,7 @@ function renderLegend() {
         </div>
         <div class="color-item">
             <span class="color-box" style="background: var(--occupied);"></span>
-            <span>Vacaciones de otro usuario</span>
+            <span>Vacaciones de otro</span>
         </div>
         ${hasExclusions ? `
         <div class="color-item">
@@ -195,7 +195,7 @@ function renderLegend() {
         ` : ''}
         <div class="color-item">
             <span class="color-box" style="background: var(--blocked);"></span>
-            <span>Día bloqueado por solapamiento</span>
+            <span>Solapamiento</span>
         </div>
     `;
 }
