@@ -190,7 +190,7 @@ function renderLegend() {
         ${hasExclusions ? `
         <div class="color-item">
             <span class="color-box" style="background: var(--excluded);"></span>
-            <span>Día excluido por empresa</span>
+            <span>Excluido por empresa</span>
         </div>
         ` : ''}
         <div class="color-item">
